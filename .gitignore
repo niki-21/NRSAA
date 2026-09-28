@@ -1,0 +1,44 @@
+# Local settings and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Python and editor caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+.DS_Store
+.idea/
+.vscode/
+# ECG recordings, derived data, and trained models
+*.mat
+*.hea
+*.csv
+*.npy
+*.npz
+*.sav
+*.pkl
+*.joblib
+*.h5
+*.keras
+*.pt
+*.pth
+/data/*
+!/data/.gitkeep
+outputs/
+# Packaging and local runs
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+.ruff_cache/
+outputs-*/
+checkpoints/
+*.hdf5
+# Local publication archives
+.cleanup-backups/

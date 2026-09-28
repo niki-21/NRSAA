@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nrsaa"
+version = "0.1.0"
+description = "Three-lead ECG processing and multilabel classification for a wireless health monitoring capstone"
+readme = "README.md"
+license-files = ["third_party/*.txt"]
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26,<3", "scipy>=1.12,<2", "PyWavelets>=1.5,<2",
+  "scikit-learn>=1.4,<2", "joblib>=1.3,<2", "matplotlib>=3.8,<4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.9,<1"]
+neural = ["tensorflow>=2.16,<3"]
+hardware = ["pyserial>=3.5,<4"]
+
+[project.scripts]
+nrsaa = "ecg_monitor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
