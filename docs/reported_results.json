@@ -2,7 +2,7 @@
   "source": "G25_CSE491_FinalReport_S24.pdf",
   "source_date": "2024-05-02",
   "status": "historical_report_values_not_reproduced",
-  "metric_averaging": "not established from recovered code",
+  "metric_averaging": "not specified sufficiently for direct comparison",
   "models": [
     {"name": "Baseline", "precision": 0.8887, "recall": 0.8127, "accuracy": 0.8463, "page": 98},
     {"name": "Wavelet", "precision": 0.8905, "recall": 0.8210, "accuracy": 0.8806, "page": 100},

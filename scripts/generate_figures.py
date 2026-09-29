@@ -7,9 +7,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 import numpy as np
+from matplotlib import pyplot as plt
+
 from ecg_monitor.demo import plot_signals, synthetic_signal
 from ecg_monitor.signal import prepare_signal
-from matplotlib import pyplot as plt
 
 
 def main():

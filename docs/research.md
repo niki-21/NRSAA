@@ -37,7 +37,7 @@ Counts are transcribed from report Table 4, p. 66. Labels can co-occur, so their
 
 The last experiment trades lower precision for higher recall. Higher recall does not establish fewer false alarms: recall measures missed positive cases, whereas false alarms require separate false-positive analysis. No clinical benefit or reduction in alarm fatigue has been demonstrated by these aggregate figures.
 
-The recovered code does not establish the exact averaging conventions, decision thresholds, split IDs, or checkpoint-to-result mapping for these experiments. Some prose interpretations of the confusion matrices in the report are inconsistent with the stated class counts. Accordingly, the table preserves the printed aggregate metrics without deriving new per-class claims or claiming a controlled ablation study. Raw transcribed values and page references are in [reported_results.json](reported_results.json).
+The published evaluation materials do not establish the exact averaging conventions, decision thresholds, split IDs, or checkpoint-to-result mapping for these experiments. Some prose interpretations of the confusion matrices in the report are inconsistent with the stated class counts. Accordingly, the table preserves the printed aggregate metrics without deriving new per-class claims or claiming a controlled ablation study. Raw transcribed values and page references are in [reported_results.json](reported_results.json).
 
 ## Wireless measurements
 
@@ -48,13 +48,13 @@ Report Table 7, p. 91, records 1,000 timestamped packets for each receiver netwo
 | Ethernet | 57 ms | 92 ms |
 | Wi-Fi | 85 ms | 96 ms |
 
-These are historical system-transport measurements, not ECG inference latency or a present-day performance guarantee. No hardware retest was performed during the code cleanup.
+These are historical system-transport measurements, not ECG inference latency or a present-day performance guarantee. No hardware retest was performed for this release.
 
 ## What can be reproduced here
 
-The maintained pipeline implements named-lead loading, physical-unit calibration, resampling, wavelet denoising, fixed-schema features, and a group-held-out random-forest baseline. An optional LSTM adapts the earlier recovered recurrent prototype. Synthetic fixtures exercise the pipeline and intentionally include labels absent from training to test edge cases.
+The maintained pipeline implements named-lead loading, physical-unit calibration, resampling, wavelet denoising, fixed-schema features, and a group-held-out random-forest baseline. The optional LSTM implements the recurrent classification path. Synthetic fixtures exercise the pipeline and intentionally include labels absent from training to test edge cases.
 
-The final SE-ResNet and feature-based neural network training code, original folds, and attributable checkpoints have not been recovered. Neither the maintained baseline nor the LSTM adaptation reproduces the table above. The original application and ZigBee integration are documented components, rather than executable components of this checkout.
+The SE-ResNet and feature-based neural network training runs, original folds, and corresponding checkpoints are not included in this release. Neither the random forest nor the LSTM reproduces the table above. The original application and ZigBee integration are documented components, rather than executable components of this checkout.
 
 ## Research limitations
 

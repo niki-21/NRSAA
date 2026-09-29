@@ -1,6 +1,6 @@
-"""Bounded capture of the recovered AD8232 sketch's single-channel serial output.
+"""Bounded capture of the AD8232 sketch's single-channel serial output.
 
-Adapted from the local AF prototype's reader.py; upstream MIT notice is retained
+Adapted from the AF prototype's reader.py; upstream MIT notice is retained
 in third_party/atrial_fibrillation_MIT.txt. Host timestamps are arrival times,
 not a calibrated acquisition clock. This data is not three-lead model input.
 """

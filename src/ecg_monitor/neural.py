@@ -1,10 +1,7 @@
-"""Maintained adaptation of the recovered lstm2.py experiment.
+"""Three-lead multilabel LSTM with group-separated training and evaluation.
 
-The LSTM(32) -> Dropout(0.1) -> Dense(32) -> Dense(16) trunk is preserved.
-Input now has a true temporal axis and three channels. Nine sigmoid outputs
-replace the original four-class softmax to support the final report's labels.
-This is not the missing final SE-ResNet implementation.
-
+Architecture: LSTM(32), Dropout(0.1), Dense(32), Dense(16), nine sigmoid outputs.
+Based on the capstone's earlier recurrent model; see docs/provenance.md.
 Upstream MIT notice: third_party/atrial_fibrillation_MIT.txt.
 """
 
@@ -104,7 +101,7 @@ def train_lstm(
     metrics = evaluate(data["y"][test], probabilities)
     metrics.update(
         {
-            "model": "recovered-lstm-adaptation",
+            "model": "three-lead-lstm",
             "seed": seed,
             "train_records": len(train),
             "validation_records": len(val),

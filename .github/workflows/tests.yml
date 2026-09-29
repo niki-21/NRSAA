@@ -4,10 +4,14 @@ permissions:
   contents: read
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.11', '3.12']
+        include:
+          - {os: ubuntu-latest, python-version: '3.11'}
+          - {os: ubuntu-latest, python-version: '3.12'}
+          - {os: macos-latest, python-version: '3.11'}
+          - {os: windows-latest, python-version: '3.11'}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,7 +22,7 @@ jobs:
       - run: ruff check src tests scripts
       - run: ruff format --check src tests scripts
       - run: python -m pytest
-      - run: nrsaa demo --output /tmp/ecg-demo
+      - run: nrsaa demo --output outputs/ci-demo
   neural:
     runs-on: ubuntu-latest
     steps:

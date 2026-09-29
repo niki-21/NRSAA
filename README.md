@@ -1,86 +1,91 @@
-![NRSAA — Wireless Health Monitoring — three-lead ECG and wireless sensing](docs/assets/hero.svg)
+![NRSAA — Wireless Health Monitoring](docs/assets/hero.svg)
 
 # NRSAA
 
-**A senior design project connecting wireless vital-sign acquisition with ECG classification.** Built at the American University of Sharjah, 2023–2024.
+**A working prototype for three-lead ECG processing, multilabel classification, and sensor acquisition.**
 
-The system combines ECG, pulse oximetry, and temperature sensors with an Arduino/XBee acquisition node, a Raspberry Pi base station, and a mobile monitoring interface. Its research component investigates nine cardiac rhythm labels using three ECG leads, wavelet denoising, and demographic information.
+NRSAA gives you an end-to-end Python workflow: load ECG recordings, prepare signals, train a classifier, and inspect predictions. Run the included synthetic demo on your laptop without downloading patient data, connecting hardware, or supplying API keys. Then use your own recordings to explore different models and settings.
 
-This repository contains the maintained Python signal pipeline, a recovered LSTM adaptation, an Arduino acquisition example, and a documented account of the wider system. The original Flutter/Firebase application, ZigBee integration firmware, and final SE-ResNet training implementation are not included in the recovered source.
+Developed from the **Real-Time Wireless Monitoring System with Predictive Analysis of Healthcare Data** capstone at the American University of Sharjah, 2023–2024.
 
-[Run the demo](#quick-start) · [Research and results](docs/research.md) · [Data contract](docs/data.md) · [Hardware](hardware/README.md) · [Code provenance](docs/provenance.md)
+[Quick start](#quick-start) · [Try a prediction](#try-a-prediction) · [Train on your data](#train-on-your-data) · [Research results](docs/research.md) · [Hardware](hardware/README.md)
 
-## Project highlights
+## What you can run
 
-| Area | Outcome |
+| Component | Included functionality |
 | --- | --- |
-| ECG research | Three leads, nine labels, raw-signal and feature-based model experiments |
-| Reported model results | **92.01% accuracy**, **93.14% recall**, **83.51% precision** for the feature + demographics model |
-| Reported wireless testing | **57 ms mean / 92 ms maximum** with Ethernet at the receiver, across 1,000 packets |
-| Maintained code | Installable package, synthetic demo, patient-group splitting, per-label evaluation, saved models and predictions |
+| Signal pipeline | Named leads I/II/III, calibration to mV, 500 Hz resampling, ten-second windows, sym5 wavelet denoising |
+| Feature classifier | 53 signal/demographic features and a multilabel random forest |
+| Neural classifier | Three-channel LSTM with nine independent label probabilities |
+| Evaluation | Patient-group splits, per-label results, micro/macro metrics, saved predictions and models |
+| Sensor capture | Bounded single-channel AD8232 serial capture and an Arduino example |
+| Demo and tests | Generated recordings, visualizations, automated tests and CI |
 
-The numeric project results above come from the **2024 final report**, pp. 91 and 105. They have not been reproduced by this codebase. The report's accuracy definition and averaging conventions have not been recovered; these figures should not be compared directly with the maintained baseline. [Read the methodology and limitations.](docs/research.md)
-
-## System architecture
-
-```mermaid
-flowchart LR
-    A["ECG · SpO₂ · Temperature"] --> B["Arduino Mega / sensor node"]
-    B -->|ZigBee / XBee| C["Raspberry Pi base station"]
-    C --> D["Firebase / monitoring interface"]
-    D --> E["Signal preparation"]
-    E --> F["ECG classification"]
-    F --> D
-```
-
-The diagram describes the capstone system. The executable Python workflow in this repository is:
-
-```text
-paired .hea / .mat recordings
-    → select leads I, II, III and calibrate to mV
-    → resample to 500 Hz · ten-second windows · sym5 denoising
-    → 53 signal/demographic features OR [5000 × 3] waveforms
-    → group-separated model training
-    → probabilities · per-label metrics · saved split and model
-```
+The target labels are **NSR, AF, STach, SA, SB, PAC, SVPB, AFL, and SVT**. A recording can have multiple labels. See the [data contract](docs/data.md) for definitions, input requirements, and evaluation details.
 
 ## Quick start
 
-Python 3.11 or newer. From this repository's root:
+Use **Python 3.11 or 3.12**. Clone the repository, or [download the source ZIP](https://github.com/niki-21/NRSAA/archive/refs/heads/main.zip) and extract it.
 
 ```sh
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[dev]'
-nrsaa demo --output outputs/demo
-python -m pytest
+git clone https://github.com/niki-21/NRSAA.git
+cd NRSAA
 ```
 
-On Windows, activate with `.venv\Scripts\activate`.
+**macOS / Linux**
 
-The demo generates 36 synthetic recordings, processes all three leads, trains a small multilabel random forest, and writes a signal plot, model, metrics, and held-out predictions. It uses no patient data and needs no hardware. Choose a new output directory when rerunning; existing runs are preserved.
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install .
+nrsaa demo --output outputs/demo
+```
+
+**Windows PowerShell** — activation is optional; run directly through the virtual environment:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install .
+.\.venv\Scripts\nrsaa.exe demo --output outputs/demo
+```
+
+The first install downloads the Python dependencies. The demo itself runs locally with no external services. It creates **36 synthetic recordings**, prepares all three leads, trains a random forest, and evaluates held-out groups.
+
+Open `outputs/demo/signals.png` to see the processed signals. Inspect `outputs/demo/run/metrics.json` for metrics and `split.json` for the train/test membership. Models and data stay in the ignored `outputs/` folder.
 
 ![Synthetic three-lead signals before and after denoising](docs/assets/signals.png)
 
-*Generated waveforms demonstrate software behavior. They are not evidence of diagnostic performance.*
+The waveforms and demo scores demonstrate software behavior, not diagnostic performance. Existing output directories are preserved; use a new name such as `outputs/demo-2` when rerunning.
 
-## Use your own recordings
+## Try a prediction
 
-Acquire the datasets separately. No patient data or model weights are distributed. See the [input format and grouping instructions](docs/data.md).
+After the demo, use its saved model on one of its generated recordings:
+
+```sh
+nrsaa predict outputs/demo/run/model.joblib outputs/demo/recordings/synthetic_000.hea
+```
+
+The command returns JSON with the recording ID, nine probabilities, and labels meeting the 0.5 threshold. On Windows, replace `nrsaa` with `.\.venv\Scripts\nrsaa.exe` in these examples.
+
+## Train on your data
+
+Supply paired PhysioNet-style `.hea`/`.mat` recordings and a JSON mapping from recording paths to patient groups. Obtain datasets separately under their applicable terms; patient data and pretrained clinical weights are not bundled.
 
 ```sh
 nrsaa prepare data/raw outputs/features.npz --groups data/groups.json
-nrsaa train outputs/features.npz --output outputs/baseline
+nrsaa train outputs/features.npz --output outputs/baseline --trees 200 --seed 42
 nrsaa predict outputs/baseline/model.joblib data/raw/example.hea
 ```
 
-Training uses patient groups provided by you. Without a group mapping, training requires the explicit `--allow-record-split` flag and records the weaker evaluation design in its output. Imputation is fitted only on training data.
+Preparation searches nested directories. Training separates patient groups and fits imputation on training records only. Each run saves the model, metrics, held-out probabilities, and split membership. [Input examples and artifact formats →](docs/data.md)
 
-Each run saves `metrics.json`, `split.json`, `predictions.npz`, and `model.joblib`. Metrics distinguish exact-match accuracy, Hamming loss, micro/macro precision, recall, and F1; per-label counts expose performance on rare labels. Only load joblib models you trust.
+Without a patient mapping, an exploratory record-level split is available through `--allow-record-split`; its metrics do not establish patient-independent performance.
 
-## Recovered LSTM experiment
+## Train the LSTM
 
-The earlier prototype's recurrent architecture is retained as an optional, modernized experiment:
+The optional neural classifier preserves the temporal and lead dimensions:
 
 ```text
 5000 time steps × 3 leads → LSTM(32) → Dropout(0.1)
@@ -88,32 +93,69 @@ The earlier prototype's recurrent architecture is retained as an optional, moder
 ```
 
 ```sh
-python -m pip install -e '.[neural]'
+python -m pip install '.[neural]'
 nrsaa prepare data/raw outputs/signals.npz --groups data/groups.json --include-signals
 nrsaa train-lstm outputs/signals.npz --output outputs/lstm --epochs 50
 nrsaa predict-lstm outputs/lstm data/raw/example.hea
 ```
 
-This adaptation corrects the original temporal layout and supports simultaneous labels. It uses separate train/validation/test groups and restores the best validation-loss weights. It is **not the final report's SE-ResNet**, and it has no reproduced clinical benchmark. Signal datasets are held in memory; start with a small subset. [Changes from the original experiment.](docs/provenance.md)
+To try this path immediately on the demo's synthetic recordings:
 
-## Repository guide
+```sh
+nrsaa prepare outputs/demo/recordings outputs/demo/signals.npz --groups outputs/demo/recordings/groups.json --include-signals
+nrsaa train-lstm outputs/demo/signals.npz --output outputs/demo/lstm --epochs 1
+nrsaa predict-lstm outputs/demo/lstm outputs/demo/recordings/synthetic_000.hea
+```
+
+The one-epoch example checks the workflow; it does not produce a useful diagnostic model. Neural training uses separate train/validation/test groups and restores the best validation-loss weights. Signals are held in memory, so start with a small dataset. TensorFlow support depends on your Python version and platform.
+
+## Explore and extend
+
+Install editable source and development tools to change the code:
+
+```sh
+python -m pip install -e '.[dev]'
+python -m pytest
+ruff check src tests scripts
+```
+
+Try changing `--trees` or `--seed`, comparing random-forest and LSTM outputs, or examining per-label support before interpreting aggregate scores. Signal preparation lives in `src/ecg_monitor/signal.py`, feature definitions in `features.py`, and the neural architecture in `neural.py`. Run `nrsaa --help` or `nrsaa train --help` for options.
+
+## Capstone system and results
+
+The wider capstone connects ECG, temperature and SpO₂ sensing to an Arduino/XBee node, Raspberry Pi base station, and monitoring application:
+
+```mermaid
+flowchart LR
+    A["ECG · SpO₂ · Temperature"] --> B["Arduino / sensor node"]
+    B -->|ZigBee / XBee| C["Raspberry Pi base station"]
+    C --> D["Firebase / monitoring interface"]
+    D --> E["Signal preparation and classification"]
+    E --> D
+```
+
+This repository provides the Python classification workflow and the single-channel acquisition example. The Flutter/Firebase application, integrated ZigBee firmware, and SE-ResNet are outside this release's executable scope.
+
+The **2024 final report** records **92.01% accuracy, 93.14% recall, and 83.51% precision** for its feature-based neural model, plus **57 ms mean receiver-to-cloud transport latency** using Ethernet. These are historical capstone measurements, not performance claims for the included random forest or LSTM. [Methods, sources, and limitations →](docs/research.md)
+
+## Project layout
 
 ```text
 src/ecg_monitor/       signal processing, datasets, models, capture and CLI
-hardware/             recovered AD8232 sketch and acquisition notes
-tests/                data validation, group isolation, inference and serial tests
-docs/                 research case study, data contract and source provenance
-scripts/              reproducible documentation figures
-third_party/          retained upstream license notice
-.github/workflows/    Python tests and synthetic demo
+hardware/             AD8232 sketch and acquisition guide
+tests/                data validation, group isolation, model and serial tests
+docs/                 data contract, research results and implementation notes
+scripts/              documentation figure generation
+third_party/          upstream license notices
+.github/workflows/    automated tests and demo checks
 ```
 
-## Team and context
+## Team and license
 
 **Nikita Miller · Samrin Saleem · Rhea Srivastava · Ahmed Sharafath Ahamed Zibli**
 
 Advisors: **Dr. Salam Dhou** and **Dr. Ming Foey Teng**.
 
-Original project title: *Real-Time Wireless Monitoring System with Predictive Analysis of Healthcare Data*. Final report dated May 2, 2024. Team contributions are credited collectively; the recovered materials do not establish individual ownership of every component.
+The Python code and documentation are available under the [MIT License](LICENSE): you can use, modify, and share them, including for your own experiments. Preserve the [third-party notices](third_party/README.md); the Arduino example retains its original SparkFun notice.
 
-This is a research prototype, not a clinical diagnostic device. The current work does not establish clinical validation or regulatory compliance. Project-wide licensing remains to be selected; upstream notices are retained in [third_party](third_party/README.md).
+NRSAA is a working research prototype, not a clinically validated diagnostic device. Use trusted model files and keep patient data out of public repositories.

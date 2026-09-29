@@ -78,7 +78,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     inference.add_argument("header", type=Path)
     neural = commands.add_parser(
-        "train-lstm", help="Train the recovered recurrent-model adaptation"
+        "train-lstm", help="Train the three-lead LSTM classifier"
     )
     neural.add_argument("dataset", type=Path)
     neural.add_argument("--output", type=Path, required=True)

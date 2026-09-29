@@ -2,6 +2,8 @@ import json
 
 import numpy as np
 import pytest
+from scipy.io import savemat
+
 from ecg_monitor.cli import main, predict
 from ecg_monitor.data import load_recording
 from ecg_monitor.dataset import build_dataset, read_dataset
@@ -10,7 +12,6 @@ from ecg_monitor.features import extract_features
 from ecg_monitor.labels import LABELS, encode_labels
 from ecg_monitor.model import evaluate, train
 from ecg_monitor.signal import prepare_signal
-from scipy.io import savemat
 
 
 def test_multilabel_encoding():

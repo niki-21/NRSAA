@@ -2,6 +2,7 @@ import csv
 from io import BytesIO
 
 import pytest
+
 from ecg_monitor.capture import capture_lines
 
 
